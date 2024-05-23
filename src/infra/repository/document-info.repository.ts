@@ -1,10 +1,9 @@
 import { prismaClient } from '../../../prisma/prismaClient'
 
 interface IDocumentInfo {
-    date: Date,
+    date?: Date | null,
     filename: string,
     contentFile: string,
-    createdAt?: Date
 }
 
 export class DocumentInfoRepository {
@@ -15,12 +14,21 @@ export class DocumentInfoRepository {
             }
         })
 
-        if(document) throw new Error('DocumentInfo already exists');
+        if(document) {
+            return;
+        }
 
+        if (documentInfo.date === null || documentInfo.date === undefined)
+            return;
+
+        if (!documentInfo.filename || documentInfo.filename.length === 0)
+            return;
 
         await prismaClient.documentInfo.create({
             data: {
-                ...documentInfo
+                date: documentInfo.date,
+                filename: documentInfo.filename,
+                contentFile: documentInfo.contentFile,
             }
         })
     }

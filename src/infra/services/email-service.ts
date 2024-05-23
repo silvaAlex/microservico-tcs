@@ -11,7 +11,7 @@ type MailConfig = {
 }
 
 interface IEmailAttachment {
-    date?: Date;
+    date?: Date | null;
     filename: string;
     contentFile: string;
 }
@@ -37,53 +37,60 @@ export class EmailService {
 
 
     async fetchUnreadEmails() {
+
+        let documents: IEmailAttachment[] = []
+
         await this.client.connect();
 
         await this.client.mailboxOpen("INBOX");
 
-        const messages = await this.client.search({ seen: true });
+        const messages = await this.client.search({ seen: false });
 
         for (const messageId of messages) {
             const message = await this.client.fetchOne(messageId.toString(), { source: true });
             const parsed = await simpleParser(message.source);
             const attachments = await this.getAttachments(parsed);
 
-            return attachments;
+            for (const attachment of attachments) {
+
+                documents.push({
+                    date: parsed.date ?? null,
+                    filename: attachment.filename ?? '',
+                    contentFile: Utils.truncate(attachment.content?.toString('utf-8'), 100),
+                });
+
+                this.register({
+                    date: parsed.date,
+                    filename: attachment.filename ?? '',
+                    contentFile: attachment.content?.toString('utf-8')
+                });
+            }
         }
 
-        return []
+        return documents
     }
 
     private getAttachments = async (parsed: ParsedMail) => {
 
         const attachments: Attachment[] = []
-        const documents: IEmailAttachment[] = []
-        const documentInfoRepository = new DocumentInfoRepository();
-
         for (const attachment of parsed.attachments) {
             if (attachment.filename?.endsWith('.xml')) {
                 attachments.push(attachment)
             }
         }
 
-        for (const attachment of attachments) {
-            documents.push({
-                date: parsed.date,
-                filename: attachment.filename ?? '',
-                contentFile: Utils.truncate(attachment.content?.toString('utf-8'), 100),
-            });
+        return attachments;
+    }
 
-            if(parsed.date === null || parsed.date === undefined) throw new Error("date required")
+    private register = async (data: IEmailAttachment) => {
 
-            if(!attachment.filename || attachment.filename.length === 0) throw new Error("filename is required")
+        const documentInfoRepository = new DocumentInfoRepository();
 
-            documentInfoRepository.register({
-                date: parsed.date,
-                filename: attachment.filename,
-                contentFile: attachment.content?.toString('utf-8'),
-            })
-        }
+        documentInfoRepository.register({
+            date: data.date,
+            filename: data.filename,
+            contentFile: data.contentFile,
+        })
 
-        return documents;
     }
 }
