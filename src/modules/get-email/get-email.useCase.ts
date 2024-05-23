@@ -1,3 +1,6 @@
+import { DocumentInfoRepository } from "../../infra/repository/document-info.repository";
+import { EmailService } from "../../infra/services/email-service";
+
 interface GetEmailRequest {
     email: string,
     password: string,
@@ -10,5 +13,26 @@ export class GetEmailUseCase {
 
     async execute(data: GetEmailRequest) {
         const { email, password, host, port } = data;
+
+        const documentInfoRepository = new DocumentInfoRepository()
+
+        const emailService = new EmailService({
+            user: email,
+            password,
+            host,
+            port: parseInt(port)
+        })
+
+        const documents = await emailService.fetchUnreadEmails();
+
+        for (const document of documents) {
+            documentInfoRepository.register({
+                date: document.date ?? new Date,
+                filename: document.filename,
+                contentFile: document.contentFile,
+            })
+        }
+
+        return documents;
     }
 }
