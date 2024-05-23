@@ -9,6 +9,16 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
+}
+
+model DocumentInfo {
+   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+   createdAt DateTime @default(now())
+   date      DateTime
+   filename  String @unique
+   contentFile String
+
+   @@map("documents_info")
 }
