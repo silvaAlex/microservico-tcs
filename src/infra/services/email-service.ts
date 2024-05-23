@@ -52,18 +52,24 @@ export class EmailService {
             const attachments = await this.getAttachments(parsed);
 
             for (const attachment of attachments) {
+                
+                const contentFile = attachment.content?.toString('utf-8')
 
-                documents.push({
-                    date: parsed.date ?? null,
-                    filename: attachment.filename ?? '',
-                    contentFile: Utils.truncate(attachment.content?.toString('utf-8'), 100),
-                });
+                if (Utils.checkVaildXml(contentFile)) {
+                    
+                    documents.push({
+                        date: parsed.date ?? null,
+                        filename: attachment.filename?.replace(/\s/g, '') ?? '',
+                        contentFile: Utils.truncate(contentFile, 100),
+                    });
 
-                this.register({
-                    date: parsed.date,
-                    filename: attachment.filename ?? '',
-                    contentFile: attachment.content?.toString('utf-8')
-                });
+                    this.register({
+                        date: parsed.date,
+                        filename: attachment.filename?.replace(/\s/g, '') ?? '',
+                        contentFile: contentFile
+                    });
+
+                }
             }
         }
 

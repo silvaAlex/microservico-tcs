@@ -12,6 +12,9 @@ export class GetInfoDocumentConntroller {
         {
             const { params } = request;
             const result = await useCase.execute(params.filename);
+
+            if(!result)
+                return response.status(404).json(`document with filename: ${params.filename} not found`)
             
             return response.json(result)
         }
