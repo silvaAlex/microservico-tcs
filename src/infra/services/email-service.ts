@@ -1,6 +1,7 @@
 import { ImapFlow } from "imapflow"
 import { Attachment, ParsedMail, simpleParser } from "mailparser";
 import { Utils } from '../../utils/index'
+import { DocumentInfoRepository } from "../repository/document-info.repository";
 
 type MailConfig = {
     host: string,
@@ -40,9 +41,9 @@ export class EmailService {
 
         await this.client.mailboxOpen("INBOX");
 
-        const messages = await this.client.search({seen: true});
+        const messages = await this.client.search({ seen: true });
 
-        for(const messageId of messages){
+        for (const messageId of messages) {
             const message = await this.client.fetchOne(messageId.toString(), { source: true });
             const parsed = await simpleParser(message.source);
             const attachments = await this.getAttachments(parsed);
@@ -55,11 +56,12 @@ export class EmailService {
 
     private getAttachments = async (parsed: ParsedMail) => {
 
-        const attachments:Attachment[]  = []
+        const attachments: Attachment[] = []
         const documents: IEmailAttachment[] = []
+        const documentInfoRepository = new DocumentInfoRepository();
 
-        for(const attachment of parsed.attachments) {
-            if(attachment.filename?.endsWith('.xml')){
+        for (const attachment of parsed.attachments) {
+            if (attachment.filename?.endsWith('.xml')) {
                 attachments.push(attachment)
             }
         }
@@ -70,8 +72,18 @@ export class EmailService {
                 filename: attachment.filename ?? '',
                 contentFile: Utils.truncate(attachment.content?.toString('utf-8'), 100),
             });
+
+            if(parsed.date === null || parsed.date === undefined) throw new Error("date required")
+
+            if(!attachment.filename || attachment.filename.length === 0) throw new Error("filename is required")
+
+            documentInfoRepository.register({
+                date: parsed.date,
+                filename: attachment.filename,
+                contentFile: attachment.content?.toString('utf-8'),
+            })
         }
-        
+
         return documents;
     }
 }
