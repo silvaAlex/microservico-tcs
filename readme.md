@@ -51,3 +51,10 @@ seguintes informações existentes dentro do arquivo `*.xml`
     - Nome Destinatário( chave `dest > xNome`)
     - Descrição Produtos ( chave `det > prod > xProd`)
     - Peso Produto  ( chave `det > prod > qCom`)
+
+
+## Como rodar
+
+```shell
+docker-compose up -d
+```
