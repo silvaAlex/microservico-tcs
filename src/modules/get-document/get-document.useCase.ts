@@ -13,7 +13,7 @@ export class GetInfoDocumentUseCase {
             const result = await Utils.parseXml(document?.contentFile)
 
             const infNFe = result['nfeProc']['NFe']['infNFe']
-            
+
             const documentInfo = {
                 numeroNota: this.getValue(infNFe['ide']['cNF']),
                 cnpjEmitente: this.getValue(infNFe['emit']['CNPJ']),
@@ -23,15 +23,13 @@ export class GetInfoDocumentUseCase {
                 descricaoProduto: this.getValue(infNFe['det']['prod']['xProd']),
                 pesoProduto: this.getValue(infNFe['det']['prod']['qCom'])
             }
-            
-            return documentInfo;
-        }   
 
-        return null
+            return documentInfo;
+        }
     }
 
-    private getValue(data: string){
-        if(data)
+    private getValue(data: any) {
+        if (data)
             return data['_text']
         return ''
     }
