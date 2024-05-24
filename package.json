@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/server.ts"
+    "dev": "nodemon src/server.ts",
+    "build": "tsc --outDir ./dist",
+    "start": "npx prisma generate && node ./dist/src/server.js"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +16,7 @@
     "express": "^4.19.2",
     "imapflow": "^1.0.162",
     "mailparser": "^3.7.1",
+    "nodemon": "^3.1.0",
     "xml-js": "^1.6.11",
     "xml-validator": "^0.2.0"
   },
@@ -24,6 +27,7 @@
     "@types/mailparser": "^3.4.4",
     "@types/xml-js": "^1.0.0",
     "prisma": "^5.14.0",
+    "ts-node": "^10.9.2",
     "tsx": "^4.10.5",
     "typescript": "^5.4.5"
   }
