@@ -8,15 +8,11 @@ interface IDocumentInfo {
 
 export class DocumentInfoRepository {
     async register(documentInfo: IDocumentInfo) {
-        const document = await prismaClient.documentInfo.findFirst({
-            where: {
-                filename: documentInfo.filename
-            }
-        })
 
-        if(document) {
-            return;
-        }
+        const document = await this.getInfoDocument(documentInfo.filename);
+
+        if(document)
+            return
 
         if (documentInfo.date === null || documentInfo.date === undefined)
             return;
@@ -34,12 +30,18 @@ export class DocumentInfoRepository {
     }
 
     async getInfoDocument(filename: string) {
-        const document = await prismaClient.documentInfo.findFirst({
-            where: {
-                filename
-            }
-        })
-
-        return document;
+        
+        try {
+            const document = await prismaClient.documentInfo.findFirst({
+                where: {
+                    filename
+                }
+            })
+    
+            return document;
+        } catch (error) {
+           return null 
+        }
+       
     }
 }
